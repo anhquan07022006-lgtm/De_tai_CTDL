@@ -1,0 +1,11 @@
+BẢN PHÁT HÀNH ĐÃ RÀ SOÁT NGÀY 17/10/2026
+Nguồn dùng tạo kết quả (C): af228fa7ea70b19bd801b7493326bfe2e76a3d75
+Commit bổ sung ảnh/log (S): f3efc5c3438bfa8b2939c375a935c3a8985d59ef
+Mã/test/demo/scripts tại S giữ nguyên so với C. S thêm bằng chứng và sửa chỉ mục ảnh.
+Git có thể chuẩn hóa CRLF/LF; so byte ZIP dùng hash trong phụ lục, so Git dùng nội dung LF.
+Git bundle: BFS_mau.bundle (lịch sử thật, clone ngoại tuyến).
+Không có URL GitHub cá nhân được tạo thay sinh viên.
+SHA256 src/BFS.jl: f6a5358f0c11148fcf9c0dee2f5c03f855ccc0723dca11103684b8e811a6009d
+Mẫu giải: 02_Do_an_mau_BFS_End_to_End.pdf.
+Ngày/giờ hạn nộp lấy từ bài tập Classroom của giảng viên.
+Gói sinh viên: mở 00_HUONG_DAN_SINH_VIEN.html để làm bài và nộp Classroom.

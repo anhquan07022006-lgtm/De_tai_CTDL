@@ -1,0 +1,41 @@
+﻿THÔNG TIN NỘP ĐỀ TÀI CÁ NHÂN
+INT13185 — Nhóm 03
+
+Họ và tên:
+MSSV:
+Lớp:
+Mã đề:
+Tên đề:
+
+URL GitHub thật:
+SHA C đầy đủ của mã/test/input dùng chạy và chụp ảnh:
+Permalink tệp thuật toán chính tại C:
+Permalink tệp kiểm thử tại C:
+SHA S đầy đủ của phiên bản nộp cuối:
+Xác nhận mã/test/input không đổi giữa C và S, hoặc mô tả phần đã chạy lại:
+
+Ngôn ngữ và phiên bản:
+Lệnh chạy ví dụ 1:
+Lệnh chạy ví dụ 2:
+Lệnh nhập dữ liệu mới:
+Lệnh biên dịch (nếu dùng C++):
+Lệnh chạy bộ kiểm thử:
+Số ca kiểm độc lập:
+Số phép kiểm đạt / tổng số phép kiểm:
+
+Đã có đủ 11 ảnh cá nhân trong báo cáo và ZIP (Có/Chưa):
+Ảnh A10 clone/chạy C đã có (Có/Chưa):
+Đã clone SHA S vào thư mục mới và chạy lại (Có/Chưa):
+Tóm tắt kết quả chạy lại hai ví dụ và bộ test từ S:
+Giảng viên truy cập được GitHub và permalink (Có/Chưa):
+
+Tên tệp Word nộp:
+Tên tệp PDF nộp:
+Tên tệp ZIP mã nguồn nộp:
+Ngày hoàn tất:
+
+Hướng dẫn: đổi tên tệp thành MSSV_MaDe_HoTenKhongDau_ThongTinNop.txt.
+Điền sau khi chốt phiên bản S rồi nộp TXT rời cùng ba tệp còn lại trên Classroom.
+Không đưa TXT chứa SHA của chính commit S vào S để tránh vòng lặp cập nhật SHA.
+
+A10 có thể chụp từ clone C trước khi thêm ảnh/báo cáo. Sau khi chốt S vẫn phải clone S chạy lại; ghi tóm tắt ở trên. Không phải commit ảnh chứa SHA của chính S vào S rồi lặp cập nhật.
