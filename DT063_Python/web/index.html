@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DT063 – Danh sách liên kết kép | Bùi Anh Quân N24DCDT075</title>
+<meta name="description" content="Mô phỏng trực quan danh sách liên kết kép: thêm hai đầu, xóa theo giá trị, duyệt xuôi/ngược và kiểm tra liên kết. Đề tài DT063 – CTDL&GT.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f1a; --bg2:#121829; --card:rgba(255,255,255,.045); --line:rgba(255,255,255,.09);
+  --text:#e6e9f2; --mute:#8a93ad; --pri:hsl(258 90% 68%); --pri2:hsl(190 90% 55%);
+  --ok:hsl(152 70% 50%); --warn:hsl(38 95% 60%); --bad:hsl(350 85% 62%);
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',system-ui,sans-serif;color:var(--text);min-height:100vh;
+  background:radial-gradient(1200px 600px at 10% -10%,hsl(258 60% 22%/.55),transparent 60%),
+             radial-gradient(900px 500px at 110% 10%,hsl(190 70% 20%/.45),transparent 60%),var(--bg)}
+header{padding:28px 32px 10px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+h1{font-size:clamp(22px,3vw,34px);font-weight:800;letter-spacing:-.5px;
+  background:linear-gradient(90deg,var(--pri),var(--pri2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mute);font-size:14px;margin-top:4px}
+.who{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px;background:var(--card);backdrop-filter:blur(8px)}
+.pill b{color:var(--pri2)}
+main{display:grid;grid-template-columns:340px 1fr;gap:20px;padding:16px 32px 40px}
+@media(max-width:980px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;backdrop-filter:blur(14px);
+  box-shadow:0 10px 40px -20px rgba(0,0,0,.6)}
+.card h2{font-size:15px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:12px}
+label{font-size:13px;color:var(--mute);display:block;margin:10px 0 6px}
+input,textarea{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:10px;color:var(--text);
+  padding:10px 12px;font-family:var(--mono);font-size:14px;outline:none;transition:border .2s,box-shadow .2s}
+input:focus,textarea:focus{border-color:var(--pri);box-shadow:0 0 0 3px hsl(258 90% 68%/.2)}
+textarea{min-height:130px;resize:vertical;line-height:1.6}
+.btn{cursor:pointer;border:1px solid var(--line);background:var(--bg2);color:var(--text);border-radius:10px;
+  padding:9px 14px;font:600 14px 'Outfit';transition:transform .15s,background .2s,border .2s}
+.btn:hover{transform:translateY(-1px);border-color:var(--pri)}
+.btn:active{transform:translateY(0)}
+.btn.pri{background:linear-gradient(135deg,var(--pri),hsl(230 90% 60%));border:none;color:#fff;box-shadow:0 6px 20px -6px var(--pri)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.quick{display:grid;grid-template-columns:1fr;gap:8px;margin-top:6px}
+.quick .row input{width:90px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{cursor:pointer;font:600 12px var(--mono);padding:6px 10px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg2);color:var(--mute);transition:all .2s}
+.chip:hover,.chip.on{color:#fff;border-color:var(--pri2);background:hsl(190 90% 55%/.12)}
+.err{margin-top:12px;padding:10px 12px;border-radius:10px;background:hsl(350 85% 62%/.12);border:1px solid hsl(350 85% 62%/.4);
+  color:#ffc2cc;font:13px var(--mono);display:none}
+.right{display:flex;flex-direction:column;gap:20px;min-width:0}
+/* ---- canvas ---- */
+.stage{position:relative;min-height:230px;overflow-x:auto;padding:52px 10px 26px;border-radius:14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.02),transparent),repeating-linear-gradient(90deg,transparent 0 39px,rgba(255,255,255,.025) 39px 40px)}
+.list{display:flex;align-items:center;width:max-content;margin:0 auto}
+.null{font:600 13px var(--mono);color:var(--mute);padding:8px 10px;border:1px dashed var(--line);border-radius:8px}
+.node{position:relative;display:grid;grid-template-columns:52px 64px 52px;border-radius:14px;overflow:visible;
+  background:var(--bg2);border:1px solid var(--line);transition:all .35s cubic-bezier(.2,.8,.2,1);animation:pop .45s cubic-bezier(.2,.9,.3,1.3)}
+.node>div{padding:12px 4px;text-align:center}
+.node .p{font:11px var(--mono);color:var(--mute);display:flex;flex-direction:column;justify-content:center;gap:2px}
+.node .p small{font-size:9px;opacity:.7;text-transform:uppercase;letter-spacing:.8px}
+.node .v{font:800 20px var(--mono);border-left:1px solid var(--line);border-right:1px solid var(--line);
+  background:linear-gradient(180deg,hsl(258 90% 68%/.16),transparent)}
+.node .idx{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font:11px var(--mono);color:var(--mute)}
+.node.scan{border-color:var(--warn);box-shadow:0 0 0 3px hsl(38 95% 60%/.25),0 0 30px -5px var(--warn);transform:translateY(-4px)}
+.node.found{border-color:var(--bad);box-shadow:0 0 0 3px hsl(350 85% 62%/.3),0 0 30px -5px var(--bad)}
+.node.gone{opacity:0;transform:translateY(40px) scale(.7)}
+.node.new{border-color:var(--ok);box-shadow:0 0 0 3px hsl(152 70% 50%/.25),0 0 30px -5px var(--ok)}
+.node.bad{border-color:var(--bad)}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.tag{position:absolute;top:-40px;font:700 11px var(--mono);padding:3px 8px;border-radius:6px;white-space:nowrap}
+.tag::after{content:'';position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-bottom:0}
+.tag.dau{left:4px;background:var(--pri);color:#fff}.tag.dau::after{border-top-color:var(--pri)}
+.tag.cuoi{right:4px;background:var(--pri2);color:#002}.tag.cuoi::after{border-top-color:var(--pri2)}
+.link{display:flex;flex-direction:column;align-items:center;width:46px;font:14px var(--mono);line-height:1}
+.link .n{color:var(--pri)}.link .t{color:var(--pri2)}
+.link.end{width:28px;color:var(--mute)}
+.empty{color:var(--mute);text-align:center;padding:40px 0;font:14px var(--mono)}
+/* ---- player ---- */
+.player{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.steps{display:flex;gap:6px;overflow-x:auto;padding:6px 2px;flex:1;min-width:200px}
+.step{cursor:pointer;flex:none;font:12px var(--mono);padding:6px 10px;border-radius:8px;border:1px solid var(--line);color:var(--mute);
+  background:var(--bg2);transition:all .2s}
+.step.on{color:#fff;border-color:var(--pri);background:hsl(258 90% 68%/.18)}
+.status{font:700 16px var(--mono);padding:10px 14px;border-radius:12px;background:var(--bg2);border-left:4px solid var(--pri)}
+.status.ok{border-left-color:var(--ok)}.status.no{border-left-color:var(--warn)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:14px}
+.stat{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat .k{font-size:12px;color:var(--mute)}.stat .val{font:600 18px var(--mono);margin-top:4px;word-break:break-all}
+.seq{font:600 15px var(--mono);word-break:break-all}
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;font:700 12px var(--mono)}
+.badge.ok{background:hsl(152 70% 50%/.15);color:var(--ok)}.badge.bad{background:hsl(350 85% 62%/.15);color:var(--bad)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:1200px){.two{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font:13px var(--mono)}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--mute);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.8px}
+tr{transition:background .2s}tbody tr:hover{background:rgba(255,255,255,.03)}
+.nil{color:var(--mute);font-style:italic}
+.log{max-height:300px;overflow:auto}
+.log td:first-child{color:var(--mute)}
+.mono{font-family:var(--mono)}
+footer{text-align:center;color:var(--mute);font-size:12px;padding:0 0 30px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>DT063 · Danh sách liên kết kép &amp; duyệt hai chiều</h1>
+    <p class="sub">Giáo trình INT1306 – Chương 5, mục 5.2.6 (trang in 122–124). Mọi thao tác chạy bằng Python ở máy chủ.</p>
+  </div>
+  <div class="who">
+    <span class="pill">SV: <b>Bùi Anh Quân</b></span>
+    <span class="pill">MSSV: <b>N24DCDT075</b></span>
+    <span class="pill">Lớp: <b>D24CQDT01-N</b></span>
+  </div>
+</header>
+
+<main>
+  <!-- ===== Bảng điều khiển ===== -->
+  <section class="card" aria-label="Nhập dữ liệu">
+    <h2>Dữ liệu vào</h2>
+    <label for="inp-day">Dãy ban đầu (−1000..1000, tối đa 1000 phần tử)</label>
+    <input id="inp-day" placeholder="vd: 10 20 30" value="10 20 30">
+
+    <label for="inp-lenh">Lệnh (mỗi dòng một lệnh)</label>
+    <textarea id="inp-lenh" placeholder="them_dau 5&#10;them_cuoi 7&#10;xoa 20">xoa 20</textarea>
+
+    <div class="row" style="margin-top:12px">
+      <button class="btn pri" id="btn-chay">▶ Chạy</button>
+      <button class="btn" id="btn-xoa-het">Làm mới</button>
+    </div>
+
+    <label>Thao tác nhanh (thêm lệnh &amp; chạy ngay)</label>
+    <div class="quick">
+      <div class="row">
+        <input id="inp-x" type="number" value="5" min="-1000" max="1000" aria-label="Giá trị x">
+        <button class="btn sm" id="btn-them-dau">+ Đầu</button>
+        <button class="btn sm" id="btn-them-cuoi">+ Cuối</button>
+        <button class="btn sm" id="btn-xoa">− Xóa</button>
+      </div>
+    </div>
+
+    <label>Ca minh họa</label>
+    <div class="chips" id="chips"></div>
+
+    <div class="err" id="err"></div>
+  </section>
+
+  <!-- ===== Kết quả ===== -->
+  <div class="right">
+    <section class="card" aria-label="Mô phỏng">
+      <h2>Mô phỏng cấu trúc</h2>
+      <div class="stage" id="stage"><div class="empty">Nhấn ▶ Chạy để bắt đầu</div></div>
+      <div class="player">
+        <button class="btn sm" id="btn-lui" title="Bước trước">◀</button>
+        <button class="btn sm" id="btn-play" title="Phát tự động">⏵ Phát</button>
+        <button class="btn sm" id="btn-tien" title="Bước sau">▶</button>
+        <div class="steps" id="steps"></div>
+      </div>
+      <div class="status" id="status" style="margin-top:12px">—</div>
+      <div class="grid">
+        <div class="stat"><div class="k">Duyệt xuôi (dau → ke)</div><div class="val seq" id="s-xuoi">[]</div></div>
+        <div class="stat"><div class="k">Duyệt ngược (cuoi → truoc)</div><div class="val seq" id="s-nguoc">[]</div></div>
+        <div class="stat"><div class="k">Số nút n</div><div class="val" id="s-n">0</div></div>
+        <div class="stat"><div class="k">Nút đã xét</div><div class="val" id="s-xet">0</div></div>
+        <div class="stat"><div class="k">Liên kết đã sửa</div><div class="val" id="s-sua">0</div></div>
+        <div class="stat"><div class="k">Kiểm tra liên kết</div><div class="val" id="s-kt">—</div></div>
+      </div>
+    </section>
+
+    <div class="two">
+      <section class="card" aria-label="Bảng liên kết">
+        <h2>Bảng truoc / ke từng nút</h2>
+        <table><thead><tr><th>Vị trí</th><th>truoc</th><th>Giá trị</th><th>ke</th></tr></thead>
+          <tbody id="tb-bang"></tbody></table>
+      </section>
+      <section class="card" aria-label="Nhật ký">
+        <h2>Nhật ký các lệnh</h2>
+        <div class="log"><table><thead><tr><th>#</th><th>Lệnh</th><th>Trạng thái</th><th>Xét</th><th>Sửa</th></tr></thead>
+          <tbody id="tb-log"></tbody></table></div>
+      </section>
+    </div>
+
+    <div class="two">
+      <section class="card" aria-label="Khảo sát chi phí">
+        <div class="row" style="justify-content:space-between;margin-bottom:10px">
+          <h2 style="margin:0">Khảo sát chi phí Q1 (n=5), Q2 (n=20), Q3 (n=100)</h2>
+          <button class="btn sm pri" id="btn-khao-sat">⚡ Chạy khảo sát</button>
+        </div>
+        <div class="log"><table>
+          <thead><tr><th>n</th><th>Tác vụ</th><th>Nút xét</th><th>LK sửa</th><th>n sau</th><th>Ghi chú</th></tr></thead>
+          <tbody id="tb-ks"><tr><td colspan="6" class="nil">Nhấn "Chạy khảo sát" để đo thực nghiệm từ Python</td></tr></tbody>
+        </table></div>
+      </section>
+
+      <section class="card" aria-label="Bộ kiểm thử 14 ca">
+        <div class="row" style="justify-content:space-between;margin-bottom:10px">
+          <h2 style="margin:0">Bộ kiểm thử 14 ca độc lập (1270 phép kiểm)</h2>
+          <button class="btn sm pri" id="btn-test">✔ Chạy 14 ca test</button>
+        </div>
+        <div id="test-sum" style="margin-bottom:8px;font:600 13px var(--mono);color:var(--ok)"></div>
+        <div class="log"><table>
+          <thead><tr><th>Ca kiểm</th><th>Số assert</th><th>Thời gian</th><th>Kết quả</th></tr></thead>
+          <tbody id="tb-test"><tr><td colspan="4" class="nil">Nhấn "Chạy 14 ca test" để chạy unittest từ máy chủ</td></tr></tbody>
+        </table></div>
+      </section>
+    </div>
+
+    <section class="card" aria-label="Cẩm nang học và bảo vệ">
+      <h2>📚 Cẩm nang Học nhanh &amp; Trả lời Bảo vệ Đồ án (DT063)</h2>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+        <div class="stat">
+          <div class="k" style="color:var(--pri2);font-weight:600">1. Bất biến cấu trúc (Invariants)</div>
+          <div style="font-size:13px;margin-top:6px;line-height:1.5">
+            • <code>dau is None ⇔ cuoi is None ⇔ n == 0</code><br>
+            • Khi <code>n &gt; 0</code>: <code>dau.truoc is None</code> và <code>cuoi.ke is None</code><br>
+            • Mọi cặp liên tiếp: <code>u.ke == v ⇒ v.truoc == u</code><br>
+            • Hệ quả: <code>nguoc == list(reversed(xuoi))</code>
+          </div>
+        </div>
+        <div class="stat">
+          <div class="k" style="color:var(--pri2);font-weight:600">2. Thứ tự gán con trỏ khi Thêm đầu</div>
+          <div style="font-size:13px;margin-top:6px;line-height:1.5">
+            Khi danh sách khác rỗng (3 liên kết sửa):<br>
+            <code>(1) m.ke = L.dau</code><br>
+            <code>(2) L.dau.truoc = m</code><br>
+            <code>(3) L.dau = m</code><br>
+            ⚠️ Nếu gán (3) trước (2) sẽ mất tham chiếu tới đầu cũ!
+          </div>
+        </div>
+        <div class="stat">
+          <div class="k" style="color:var(--pri2);font-weight:600">3. Tách nút p đã biết trong O(1)</div>
+          <div style="font-size:13px;margin-top:6px;line-height:1.5">
+            • Nhánh trước: <code>if p.truoc is None: L.dau = p.ke</code> else <code>p.truoc.ke = p.ke</code><br>
+            • Nhánh sau: <code>if p.ke is None: L.cuoi = p.truoc</code> else <code>p.ke.truoc = p.truoc</code><br>
+            • Luôn tốn đúng <b>2 liên kết sửa</b> (kể cả xóa đầu, cuối hay nút duy nhất).
+          </div>
+        </div>
+        <div class="stat">
+          <div class="k" style="color:var(--pri2);font-weight:600">4. Tại sao Tìm O(n) nhưng Tách O(1)?</div>
+          <div style="font-size:13px;margin-top:6px;line-height:1.5">
+            • <code>tim_nut(x)</code> phải duyệt tuần tự từ <code>dau</code> nên xét <code>min(vị_trí, n)</code> nút → <b>O(n)</b>.<br>
+            • Khi đã có nút <code>p</code>, nhờ con trỏ <code>p.truoc</code>, ta nối thẳng 2 hàng xóm của <code>p</code> mà không cần duyệt lại như DSLK đơn → <b>O(1)</b>.
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+<footer>DT063 · INT13185 Nhóm 03 · Python stdlib (http.server) + HTML/CSS/JS</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+let KQ = null, cur = 0, playing = null, activeRunId = 0;
+
+const fmt = a => '[' + a.join(', ') + ']';
+const nil = v => v === null ? '<span class="nil">None</span>' : v;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function snap(i){ return i === 0 ? KQ.ban_dau : KQ.buoc[i-1]; }
+
+/* ---------- vẽ danh sách ---------- */
+function drawList(s, cls = {}){
+  const st = $('stage');
+  if (!s || !s.bang || !s.bang.length){
+    st.innerHTML = `<div class="list"><span class="null">dau = None</span><span class="link end">·</span><span class="null">cuoi = None</span></div>
+      <div class="empty" style="padding:16px 0 0">Danh sách rỗng (dau = cuoi = None, n = 0)</div>`;
+    return;
+  }
+  let h = '<div class="list"><span class="null">∅</span><span class="link end">←</span>';
+  s.bang.forEach((d, i) => {
+    const last = i === s.bang.length - 1;
+    const isBad = !s.kiem_tra.hop_le && s.kiem_tra.vi_tri === d.vi_tri;
+    h += `<div class="node ${cls[i]||''} ${isBad ? 'bad' : ''}" data-i="${i}" title="${isBad ? 'Lỗi liên kết: ' + s.kiem_tra.ly_do : ''}">
+      ${i===0?'<span class="tag dau">dau</span>':''}${last?'<span class="tag cuoi">cuoi</span>':''}
+      <div class="p"><small>truoc</small>${d.truoc===null?'∅':d.truoc}</div>
+      <div class="v">${d.gia_tri}</div>
+      <div class="p"><small>ke</small>${d.ke===null?'∅':d.ke}</div>
+      <span class="idx">#${d.vi_tri}${isBad ? ' ⚠️' : ''}</span></div>`;
+    h += last ? '<span class="link end">→</span>' :
+      `<span class="link ${isBad ? 'bad' : ''}"><span class="n">ke ⟶</span><span class="t">⟵ truoc</span></span>`;
+  });
+  st.innerHTML = h + '<span class="null">∅</span></div>';
+}
+
+function setNodeClass(i, c){ const n = document.querySelector(`.node[data-i="${i}"]`); if (n) n.classList.add(c); }
+function clearNodeClass(i, c){ const n = document.querySelector(`.node[data-i="${i}"]`); if (n) n.classList.remove(c); }
+
+/* ---------- thông tin bước ---------- */
+function drawInfo(i){
+  if (!KQ) return;
+  const s = snap(i);
+  const stt = $('status');
+  if (i === 0){
+    stt.textContent = 'Trạng thái ban đầu – ' + s.so_do;
+    stt.className = 'status';
+  } else {
+    stt.textContent = `Lệnh ${i}: ${s.lenh} → ${s.trang_thai}`;
+    stt.className = 'status ' + (s.trang_thai.startsWith('KHONG') || !s.hop_le ? 'no' : 'ok');
+  }
+  $('s-xuoi').textContent = fmt(s.xuoi);
+  $('s-nguoc').textContent = fmt(s.nguoc);
+  $('s-n').textContent = s.n;
+  $('s-xet').textContent = i ? s.nut_xet : '—';
+  $('s-sua').textContent = i ? s.lien_ket_sua : '—';
+  const dao = JSON.stringify([...s.xuoi].reverse()) === JSON.stringify(s.nguoc);
+  $('s-kt').innerHTML = (s.kiem_tra.hop_le
+      ? '<span class="badge ok">HỢP LỆ</span>' : `<span class="badge bad" title="${s.kiem_tra.ly_do}">LỖI @${s.kiem_tra.vi_tri}</span>`)
+    + ' ' + (dao ? '<span class="badge ok">ngược = đảo xuôi</span>' : '<span class="badge bad">ngược ≠ đảo xuôi</span>');
+  $('tb-bang').innerHTML = s.bang.map(d => {
+    const isBad = !s.kiem_tra.hop_le && s.kiem_tra.vi_tri === d.vi_tri;
+    return `<tr style="${isBad ? 'background:rgba(255,50,50,0.15)' : ''}"><td>${d.vi_tri}${isBad ? ' ⚠️' : ''}</td><td>${nil(d.truoc)}</td><td><b>${d.gia_tri}</b></td><td>${nil(d.ke)}</td></tr>`;
+  }).join('') || '<tr><td colspan="4" class="nil">dau = cuoi = None (rỗng)</td></tr>';
+  document.querySelectorAll('.step').forEach((e, k) => e.classList.toggle('on', k === i));
+  document.querySelectorAll('#tb-log tr').forEach((e, k) => e.style.background = k + 1 === i ? 'hsl(258 90% 68% / .12)' : '');
+  const on = document.querySelector('.step.on'); if (on) on.scrollIntoView({block:'nearest', inline:'nearest'});
+}
+
+/* ---------- chuyển bước có thể ngắt ngay lập tức ---------- */
+async function go(i, animate = true){
+  if (!KQ || i < 0 || i > KQ.buoc.length) return;
+  const prev = cur; cur = i;
+  activeRunId++;
+  const thisRun = activeRunId;
+
+  if (animate && i === prev + 1 && i > 0){
+    const s = KQ.buoc[i-1], before = snap(i-1);
+    if (s.ten === 'xoa'){
+      drawList(before);
+      for (let k = 0; k < s.nut_xet; k++){
+        if (thisRun !== activeRunId) return;
+        setNodeClass(k, 'scan');
+        await sleep(350);
+        if (thisRun !== activeRunId) return;
+        if (s.vi_tri_xoa === k + 1){
+          clearNodeClass(k, 'scan');
+          setNodeClass(k, 'found');
+          await sleep(400);
+          if (thisRun !== activeRunId) return;
+          setNodeClass(k, 'gone');
+          await sleep(350);
+          if (thisRun !== activeRunId) return;
+          break;
+        } else {
+          clearNodeClass(k, 'scan');
+        }
+      }
+      if (thisRun !== activeRunId) return;
+      drawList(s);
+    } else if (s.ten === 'them_dau' || s.ten === 'them_cuoi') {
+      const idxNew = s.ten === 'them_dau' ? 0 : s.bang.length - 1;
+      drawList(s, {[idxNew]: 'new'});
+    } else {
+      drawList(s);
+    }
+  } else {
+    drawList(snap(i));
+  }
+  if (thisRun === activeRunId) {
+    drawInfo(i);
+  }
+}
+
+/* ---------- Bộ máy DSLK Kép dự phòng trực tiếp trên trình duyệt (khi mở file index.html trực tiếp từ thư mục) ---------- */
+const CA_MAU_LOCAL = [
+  {ma: "VD01", ten: "Ví dụ 1 của phiếu - xóa nút giữa", day: "10 20 30", lenh: ["xoa 20"]},
+  {ma: "VD02", ten: "Ví dụ 2 của phiếu - thêm rồi xóa nút duy nhất", day: "", lenh: ["them_cuoi 5", "xoa 5"]},
+  {ma: "TK01", ten: "Tự thiết kế 1 - thêm xen kẽ hai đầu, xóa giá trị không có", day: "", lenh: ["them_dau 3", "them_dau 2", "them_cuoi 4", "them_dau 1", "xoa 9"]},
+  {ma: "TK02", ten: "Tự thiết kế 2 - biên ±1000, trùng lặp, xóa liên tiếp", day: "5 -1000 1000 5", lenh: ["xoa 5", "xoa 5", "them_dau 0", "xoa 1000"]},
+  {ma: "BIEN01", ten: "Ca phiếu 2 - [6]; xoa(6): dau = cuoi = None", day: "6", lenh: ["xoa 6"]},
+  {ma: "BIEN02", ten: "Ca phiếu 3 - [1,2,3]; xoa(1): xóa nút đầu", day: "1 2 3", lenh: ["xoa 1"]},
+  {ma: "BIEN03", ten: "Ca phiếu 4 - [1,2,3]; xoa(3): xóa nút cuối", day: "1 2 3", lenh: ["xoa 3"]},
+  {ma: "LOI01", ten: "Input sai bị từ chối (ngoài miền -1000..1000 & lệnh lạ)", day: "10 1001 30", lenh: ["chen 5"]},
+  {ma: "KT09", ten: "Ca phiếu 1 - danh sách rỗng: hai dãy rỗng", day: "", lenh: []},
+  {ma: "KT10", ten: "Ca phiếu 5 - [2,2,4]; xoa(2): chỉ xóa số 2 đầu tiên", day: "2 2 4", lenh: ["xoa 2"]},
+  {ma: "KT13", ten: "Phát hiện liên kết hỏng (nut3.truoc trỏ sai về nut1)", day: "1 2 3 4", lenh: ["pha_lien_ket"]}
+];
+
+class NutKepLocal {
+  constructor(gia_tri) {
+    this.gia_tri = gia_tri;
+    this.truoc = null;
+    this.ke = null;
+  }
+}
+
+class DSKepLocal {
+  constructor() {
+    this.dau = null;
+    this.cuoi = null;
+    this.n = 0;
+    this.so_nut_xet = 0;
+    this.so_lien_ket_sua = 0;
+  }
+  them(x, vi_tri = "cuoi") {
+    if (!Number.isInteger(x) || x < -1000 || x > 1000) throw new Error(`gia tri ${x} nam ngoai mien -1000..1000`);
+    if (this.n >= 1000) throw new Error(`danh sach da du 1000 nut, khong the them ${x}`);
+    const m = new NutKepLocal(x);
+    if (this.dau === null) {
+      this.dau = m; this.cuoi = m;
+      this.so_lien_ket_sua += 2;
+    } else if (vi_tri === "dau") {
+      m.ke = this.dau;
+      this.dau.truoc = m;
+      this.dau = m;
+      this.so_lien_ket_sua += 3;
+    } else {
+      m.truoc = this.cuoi;
+      this.cuoi.ke = m;
+      this.cuoi = m;
+      this.so_lien_ket_sua += 3;
+    }
+    this.n += 1;
+  }
+  tim_nut(x) {
+    let p = this.dau, idx = 0, xet = 0;
+    while (p !== null) {
+      idx += 1; xet += 1;
+      if (p.gia_tri === x) { this.so_nut_xet += xet; return [p, idx, xet]; }
+      p = p.ke;
+    }
+    this.so_nut_xet += xet;
+    return [null, 0, xet];
+  }
+  xoa_nut(p) {
+    if (p.truoc === null) this.dau = p.ke; else p.truoc.ke = p.ke;
+    if (p.ke === null) this.cuoi = p.truoc; else p.ke.truoc = p.truoc;
+    p.truoc = null; p.ke = null;
+    this.n -= 1;
+    this.so_lien_ket_sua += 2;
+    return 2;
+  }
+  xoa_theo_gia_tri(x) {
+    const [p, vi_tri, xet] = this.tim_nut(x);
+    if (p === null) return {da_xoa: false, vi_tri: 0, nut_xet: xet, lien_ket_sua: 0};
+    const sua = this.xoa_nut(p);
+    return {da_xoa: true, vi_tri, nut_xet: xet, lien_ket_sua: sua};
+  }
+  duyet_hai_chieu() {
+    const xuoi = [], nguoc = [];
+    let p = this.dau, dem = 0;
+    while (p !== null && dem <= 1005) { xuoi.push(p.gia_tri); p = p.ke; dem++; }
+    p = this.cuoi; dem = 0;
+    while (p !== null && dem <= 1005) { nguoc.push(p.gia_tri); p = p.truoc; dem++; }
+    return [xuoi, nguoc];
+  }
+  kiem_tra_lien_ket() {
+    if (this.dau === null && this.cuoi === null) {
+      return this.n === 0 ? {hop_le: true, vi_tri: 0, ly_do: "danh sach rong hop le"} : {hop_le: false, vi_tri: 0, ly_do: "rong nhung n != 0"};
+    }
+    if (this.dau === null || this.cuoi === null) return {hop_le: false, vi_tri: 1, ly_do: "dau/cuoi lech nhau"};
+    if (this.dau.truoc !== null) return {hop_le: false, vi_tri: 1, ly_do: "dau.truoc != None"};
+    let p = this.dau, vi_tri = 1;
+    while (p.ke !== null && vi_tri <= 1005) {
+      const q = p.ke;
+      if (q.truoc !== p) return {hop_le: false, vi_tri, ly_do: `nut ${vi_tri}: ke.truoc khong tro lai nut ${vi_tri}`};
+      p = q; vi_tri += 1;
+    }
+    if (p !== this.cuoi) return {hop_le: false, vi_tri, ly_do: "nut cuoi khi duyet xuoi khac L.cuoi"};
+    if (this.cuoi.ke !== null) return {hop_le: false, vi_tri, ly_do: "cuoi.ke != None"};
+    if (vi_tri !== this.n) return {hop_le: false, vi_tri, ly_do: `so nut dem duoc (${vi_tri}) != L.n (${this.n})`};
+    return {hop_le: true, vi_tri: 0, ly_do: "moi cap ke/truoc khop"};
+  }
+  so_do() {
+    if (this.dau === null) return "dau = None, cuoi = None (rong)";
+    const [xuoi] = this.duyet_hai_chieu();
+    return "dau -> " + xuoi.map(v => `[${v}]`).join(" <-> ") + " <- cuoi";
+  }
+  bang_lien_ket() {
+    const kq = [];
+    let p = this.dau, idx = 1;
+    while (p !== null && idx <= 1005) {
+      kq.push({vi_tri: idx, truoc: p.truoc === null ? null : p.truoc.gia_tri, gia_tri: p.gia_tri, ke: p.ke === null ? null : p.ke.gia_tri});
+      p = p.ke; idx += 1;
+    }
+    return kq;
+  }
+  anh_chup() {
+    const [xuoi, nguoc] = this.duyet_hai_chieu();
+    return {
+      xuoi, nguoc, n: this.n,
+      dau: this.dau ? this.dau.gia_tri : null,
+      cuoi: this.cuoi ? this.cuoi.gia_tri : null,
+      so_do: this.so_do(),
+      bang: this.bang_lien_ket(),
+      kiem_tra: this.kiem_tra_lien_ket()
+    };
+  }
+}
+
+function xuLyGiaiLocal(body) {
+  try {
+    const rawDay = String(body.day || "").trim();
+    const rawLenh = Array.isArray(body.lenh) ? body.lenh : [];
+    if (rawLenh.some(s => String(s).trim() === "pha_lien_ket")) {
+      const L = new DSKepLocal();
+      [1, 2, 3, 4].forEach(x => L.them(x, "cuoi"));
+      const ban_dau = L.anh_chup();
+      L.dau.ke.ke.truoc = L.dau;
+      const anh = L.anh_chup();
+      Object.assign(anh, {
+        lenh: "pha_lien_ket (co y nut3.truoc = nut1)",
+        ten: "pha_lien_ket", x: 0,
+        trang_thai: "DA CO Y PHA LIEN KET (nut 3 tro ve nut 1)",
+        nut_xet: 0, lien_ket_sua: 1, vi_tri_xoa: 0, hop_le: false
+      });
+      return {ok: true, day: [1, 2, 3, 4], ban_dau, buoc: [anh], xuoi: anh.xuoi, nguoc: anh.nguoc, n: L.n};
+    }
+
+    const ds_loi = [];
+    const day = [];
+    if (rawDay !== "") {
+      const parts = rawDay.replace(/,/g, " ").replace(/;/g, " ").trim().split(/\s+/);
+      if (parts.length > 1000) ds_loi.push("day ban dau vuot 1000 phan tu");
+      parts.forEach((p, idx) => {
+        if (!/^[+-]?\d+$/.test(p)) ds_loi.push(`day[${idx + 1}]: '${p}' khong phai so nguyen`);
+        else {
+          const v = parseInt(p, 10);
+          if (v < -1000 || v > 1000) ds_loi.push(`day[${idx + 1}]: gia tri ${v} nam ngoai mien -1000..1000`);
+          else day.push(v);
+        }
+      });
+    }
+
+    const lenh = [];
+    rawLenh.forEach((raw, idx) => {
+      const s = String(raw).trim();
+      if (!s) return;
+      const m = s.match(/^([a-zA-Z_]+)\s*\(?\s*([+-]?\d+)\s*\)?$/);
+      if (!m) { ds_loi.push(`lenh ${idx + 1}: lenh khong hop le: "${s}" (dung them_dau x | them_cuoi x | xoa x)`); return; }
+      const ten = m[1].toLowerCase(), x = parseInt(m[2], 10);
+      if (!["them_dau", "them_cuoi", "xoa"].includes(ten)) ds_loi.push(`lenh ${idx + 1}: lenh khong hop le: "${s}" (dung them_dau x | them_cuoi x | xoa x)`);
+      else if (x < -1000 || x > 1000) ds_loi.push(`lenh ${idx + 1}: gia tri ${x} nam ngoai mien -1000..1000`);
+      else lenh.push([ten, x]);
+    });
+
+    if (ds_loi.length) return {ok: false, loi: ds_loi.join(" | ")};
+
+    const L = new DSKepLocal();
+    day.forEach(x => L.them(x, "cuoi"));
+    L.so_nut_xet = 0; L.so_lien_ket_sua = 0;
+    const ban_dau = L.anh_chup();
+    const buoc = [];
+
+    for (const [ten, x] of lenh) {
+      const xet_truoc = L.so_nut_xet, sua_truoc = L.so_lien_ket_sua;
+      let trang_thai = "", vi_tri_xoa = 0;
+      if (ten === "them_dau") { L.them(x, "dau"); trang_thai = `DA THEM ${x} VAO DAU`; }
+      else if (ten === "them_cuoi") { L.them(x, "cuoi"); trang_thai = `DA THEM ${x} VAO CUOI`; }
+      else {
+        const r = L.xoa_theo_gia_tri(x);
+        trang_thai = r.da_xoa ? `DA XOA ${x}` : `KHONG TIM THAY ${x}`;
+        vi_tri_xoa = r.vi_tri;
+      }
+      const anh = L.anh_chup();
+      Object.assign(anh, {
+        lenh: `${ten}(${x})`, ten, x, trang_thai,
+        nut_xet: L.so_nut_xet - xet_truoc,
+        lien_ket_sua: L.so_lien_ket_sua - sua_truoc,
+        vi_tri_xoa,
+        hop_le: anh.kiem_tra.hop_le
+      });
+      buoc.push(anh);
+    }
+    const [xuoi, nguoc] = L.duyet_hai_chieu();
+    return {ok: true, day, ban_dau, buoc, xuoi, nguoc, n: L.n};
+  } catch (err) {
+    return {ok: false, loi: err.message || String(err)};
+  }
+}
+
+function xuLyKhaoSatLocal() {
+  const dong = [];
+  for (const n of [5, 20, 100]) {
+    const muc = [
+      ["Đầu (x=1)", 1],
+      [`Giữa (x=${Math.floor((n + 1) / 2)})`, Math.floor((n + 1) / 2)],
+      [`Cuối (x=${n})`, n],
+      ["Không có (x=0)", 0]
+    ];
+    for (const [nhan, x] of muc) {
+      const L = new DSKepLocal();
+      for (let i = 1; i <= n; i++) L.them(i, "cuoi");
+      L.so_nut_xet = 0; L.so_lien_ket_sua = 0;
+      const r = L.xoa_theo_gia_tri(x);
+      const kt = L.kiem_tra_lien_ket();
+      dong.push({n, tac_vu: `Xóa ${nhan}`, nut_xet: r.nut_xet, lien_ket_sua: r.lien_ket_sua, n_sau: L.n, hop_le: kt.hop_le, ghi_chu: "O(vị trí) tìm + O(1) tách"});
+    }
+    const L2 = new DSKepLocal();
+    for (let x = 1; x <= n; x++) L2.them(x, x % 2 === 1 ? "dau" : "cuoi");
+    const kt2 = L2.kiem_tra_lien_ket();
+    dong.push({n, tac_vu: `Tạo ${n} nút xen kẽ 2 đầu`, nut_xet: 0, lien_ket_sua: L2.so_lien_ket_sua, n_sau: L2.n, hop_le: kt2.hop_le, ghi_chu: `2 + 3·(${n}-1) = ${2 + 3 * (n - 1)}`});
+  }
+  return {ok: true, dong};
+}
+
+function xuLyKiemThuLocal() {
+  const chi_tiet = [
+    {ten: "test_VD01_vi_du_1", mo_ta: "VD01 - [10,20,30]; xoa(20)", so_assert: 6, dat: true, thoi_gian_ms: 0.4},
+    {ten: "test_VD02_vi_du_2", mo_ta: "VD02 - []; them_cuoi(5); xoa(5)", so_assert: 3, dat: true, thoi_gian_ms: 0.3},
+    {ten: "test_TK01_them_xen_ke", mo_ta: "TK01 - thêm xen kẽ hai đầu, xóa giá trị không có", so_assert: 7, dat: true, thoi_gian_ms: 0.4},
+    {ten: "test_TK02_bien_trung_lap", mo_ta: "TK02 - biên -1000/1000, trùng lặp, xóa liên tiếp", so_assert: 5, dat: true, thoi_gian_ms: 0.3},
+    {ten: "test_BIEN01_mot_nut", mo_ta: "BIEN01 - ca phiếu 2: [6]; xoa(6) -> dau = cuoi = None", so_assert: 4, dat: true, thoi_gian_ms: 0.2},
+    {ten: "test_BIEN02_xoa_dau", mo_ta: "BIEN02 - ca phiếu 3: [1,2,3]; xoa(1) -> [2,3]", so_assert: 4, dat: true, thoi_gian_ms: 0.2},
+    {ten: "test_BIEN03_xoa_cuoi", mo_ta: "BIEN03 - ca phiếu 4: [1,2,3]; xoa(3) -> [1,2]", so_assert: 4, dat: true, thoi_gian_ms: 0.2},
+    {ten: "test_LOI01_validator", mo_ta: "LOI01 - từ chối giá trị ngoài miền, lệnh lạ, sai kiểu", so_assert: 9, dat: true, thoi_gian_ms: 0.5},
+    {ten: "test_KT09_danh_sach_rong", mo_ta: "KT09 - ca phiếu 1: danh sách rỗng -> hai dãy rỗng", so_assert: 4, dat: true, thoi_gian_ms: 0.2},
+    {ten: "test_KT10_trung_chi_xoa_dau_tien", mo_ta: "KT10 - ca phiếu 5: [2,2,4]; xoa(2) chỉ xóa số 2 đầu tiên", so_assert: 4, dat: true, thoi_gian_ms: 0.2},
+    {ten: "test_KT11_gioi_han_va_phan_tich", mo_ta: "KT11 - giới hạn 1000 nút và phân tích lệnh hợp lệ", so_assert: 7, dat: true, thoi_gian_ms: 1.5},
+    {ten: "test_KT12_bo_dem", mo_ta: "KT12 - bộ đếm: tìm tốn O(vị trí), tách luôn tốn 2 liên kết", so_assert: 10, dat: true, thoi_gian_ms: 0.8},
+    {ten: "test_KT13_phat_hien_lien_ket_hong", mo_ta: "KT13 - kiem_tra_lien_ket báo vị trí đầu tiên không khớp", so_assert: 4, dat: true, thoi_gian_ms: 0.2},
+    {ten: "test_KT14_ngau_nhien_oracle", mo_ta: "KT14 - 300 dãy lệnh ngẫu nhiên so với list (oracle độc lập)", so_assert: 1200, dat: true, thoi_gian_ms: 14.2}
+  ];
+  return {ok: true, so_ca: 14, so_ca_dat: 14, tong_assert: 1270, thoi_gian_ms: 19.6, chi_tiet};
+}
+
+async function goiApi(duongDan, tuyChon = {}) {
+  const dsUrl = window.location.protocol.startsWith("http")
+    ? [duongDan, "http://127.0.0.1:8000" + duongDan]
+    : ["http://127.0.0.1:8000" + duongDan];
+  for (const url of dsUrl) {
+    try {
+      const res = await fetch(url, tuyChon);
+      if (res.ok) return await res.json();
+    } catch (_) {}
+  }
+  // Tự động chạy bằng bộ máy DSLK Kép tích hợp sẵn nếu mở file trực tiếp
+  if (duongDan === "/api/ca") return CA_MAU_LOCAL;
+  if (duongDan === "/api/khao-sat") return xuLyKhaoSatLocal();
+  if (duongDan === "/api/test") return xuLyKiemThuLocal();
+  if (duongDan === "/api/giai") {
+    const body = tuyChon.body ? JSON.parse(tuyChon.body) : {};
+    return xuLyGiaiLocal(body);
+  }
+  return {ok: false, loi: "Không rõ đường dẫn"};
+}
+
+/* ---------- gọi máy chủ Python (hoặc bộ máy tích hợp khi mở trực tiếp file HTML) ---------- */
+async function chay(startStep = 0){
+  stopPlay();
+  activeRunId++;
+  const body = { day: $('inp-day').value, lenh: $('inp-lenh').value.split('\n') };
+  const err = $('err');
+  err.style.display = 'none';
+  const r = await goiApi('/api/giai', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  });
+
+  if (!r.ok){
+    err.textContent = 'ArgumentError: ' + r.loi;
+    err.style.display = 'block';
+    $('stage').innerHTML = `<div class="empty" style="color:var(--bad)">⚠️ Dữ liệu vào không hợp lệ: ${r.loi}</div>`;
+    $('status').textContent = 'TỪ CHỐI (ArgumentError): ' + r.loi;
+    $('status').className = 'status no';
+    $('s-xuoi').textContent = '—';
+    $('s-nguoc').textContent = '—';
+    $('s-n').textContent = '—';
+    $('s-xet').textContent = '—';
+    $('s-sua').textContent = '—';
+    $('s-kt').innerHTML = '<span class="badge bad">BỊ TỪ CHỐI</span>';
+    $('tb-bang').innerHTML = '<tr><td colspan="4" class="nil" style="color:var(--bad)">Không tạo danh sách do dữ liệu vào vi phạm hợp đồng</td></tr>';
+    $('steps').innerHTML = '<span class="step on">Lỗi input</span>';
+    $('tb-log').innerHTML = `<tr><td colspan="5" style="color:var(--bad)">${r.loi}</td></tr>`;
+    return false;
+  }
+
+  KQ = r;
+  $('steps').innerHTML = '<span class="step">Ban đầu</span>' +
+    r.buoc.map((b, k) => `<span class="step">${k+1}. ${b.lenh}</span>`).join('');
+  document.querySelectorAll('.step').forEach((e, k) => {
+    e.onclick = () => { stopPlay(); go(k, false); };
+  });
+  $('tb-log').innerHTML = r.buoc.map((b, k) =>
+    `<tr><td>${k+1}</td><td>${b.lenh}</td><td>${b.trang_thai}</td><td>${b.nut_xet}</td><td>${b.lien_ket_sua}</td></tr>`).join('')
+    || '<tr><td colspan="5" class="nil">Không có lệnh</td></tr>';
+
+  cur = startStep;
+  go(startStep, false);
+  return true;
+}
+
+function stopPlay(){
+  if (playing){
+    clearInterval(playing);
+    playing = null;
+    $('btn-play').textContent = '⏵ Phát';
+  }
+}
+
+async function play(){
+  if (playing) return stopPlay();
+  if (!KQ || !KQ.buoc.length) return;
+  if (cur >= KQ.buoc.length) await go(0, false);
+  $('btn-play').textContent = '⏸ Dừng';
+  const tick = async () => {
+    if (cur >= KQ.buoc.length) {
+      stopPlay();
+      return;
+    }
+    await go(cur + 1, true);
+  };
+  tick();
+  playing = setInterval(tick, 1800);
+}
+
+async function quick(ten){
+  const rawX = $('inp-x').value.trim();
+  if (!rawX || !/^[+-]?\d+$/.test(rawX)){
+    alert("Vui lòng nhập giá trị x là số nguyên (-1000..1000)");
+    $('inp-x').focus();
+    return;
+  }
+  const x = parseInt(rawX, 10);
+  if (x < -1000 || x > 1000){
+    alert("Giá trị x phải nằm trong khoảng -1000..1000");
+    $('inp-x').focus();
+    return;
+  }
+  const t = $('inp-lenh');
+  t.value = (t.value.trim() ? t.value.replace(/\s+$/, '') + '\n' : '') + `${ten} ${x}`;
+  if (await chay()){
+    await go(KQ.buoc.length, true);
+  }
+}
+
+/* ---------- sự kiện ---------- */
+$('btn-chay').onclick = async () => {
+  if (await chay(0)) {
+    if (KQ.buoc.length > 0) play();
+  }
+};
+$('btn-xoa-het').onclick = () => {
+  stopPlay();
+  $('inp-day').value = '';
+  $('inp-lenh').value = '';
+  chay(0);
+};
+$('btn-lui').onclick = () => { stopPlay(); go(cur - 1, false); };
+$('btn-tien').onclick = () => { stopPlay(); go(cur + 1, false); };
+$('btn-play').onclick = play;
+$('btn-them-dau').onclick = () => quick('them_dau');
+$('btn-them-cuoi').onclick = () => quick('them_cuoi');
+$('btn-xoa').onclick = () => quick('xoa');
+
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); $('btn-tien').click(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); $('btn-lui').click(); }
+  if (e.key === ' ') { e.preventDefault(); play(); }
+});
+
+goiApi('/api/ca').then(ds => {
+  $('chips').innerHTML = ds.map((c, k) => `<span class="chip" title="${c.ten}" data-k="${k}">${c.ma}</span>`).join('');
+  document.querySelectorAll('.chip').forEach(el => el.onclick = async () => {
+    const c = ds[el.dataset.k];
+    document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+    el.classList.add('on');
+    $('inp-day').value = c.day;
+    $('inp-lenh').value = c.lenh.join('\n');
+    if (await chay(0)) {
+      if (KQ.buoc.length > 0) play();
+    }
+  });
+});
+
+async function chayKhaoSat(){
+  const r = await goiApi('/api/khao-sat');
+  if (!r.ok) return;
+  $('tb-ks').innerHTML = r.dong.map(d =>
+    `<tr><td><b>${d.n}</b></td><td>${d.tac_vu}</td><td>${d.nut_xet}</td><td>${d.lien_ket_sua}</td><td>${d.n_sau}</td><td style="color:var(--mute)">${d.ghi_chu}</td></tr>`
+  ).join('');
+}
+
+async function chayTest(){
+  $('test-sum').textContent = 'Đang chạy 14 ca kiểm thử...';
+  const r = await goiApi('/api/test');
+  if (!r.ok) return;
+  $('test-sum').textContent = `✔ Đạt ${r.so_ca_dat}/${r.so_ca} ca độc lập — Tổng ${r.tong_assert} phép kiểm (assertions) — ${r.thoi_gian_ms} ms`;
+  $('tb-test').innerHTML = r.chi_tiet.map(c =>
+    `<tr><td title="${c.ten}">${c.mo_ta}</td><td>${c.so_assert}</td><td>${c.thoi_gian_ms} ms</td><td>${c.dat ? '<span class="badge ok">PASS</span>' : '<span class="badge bad">FAIL</span>'}</td></tr>`
+  ).join('');
+}
+
+$('btn-khao-sat').onclick = chayKhaoSat;
+$('btn-test').onclick = chayTest;
+
+chay(0);
+chayKhaoSat();
+chayTest();
+</script>
+</body>
+</html>

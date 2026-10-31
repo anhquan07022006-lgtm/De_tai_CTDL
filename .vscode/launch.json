@@ -1,0 +1,96 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Bài 01 (VD01): Xóa nút giữa [10,20,30] -> xoa(20)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_01_VD01_xoa_nut_giua.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Bài 02 (VD02): Thêm vào rỗng rồi xóa nút duy nhất",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_02_VD02_them_xoa_nut_duy_nhat.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Bài 03 (TK01): Thêm xen kẽ 2 đầu, xóa phần tử không có",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_03_TK01_them_xen_ke_xoa_khong_co.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Bài 04 (TK02): Biên ±1000, trùng lặp, xóa liên tiếp",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_04_TK02_bien_1000_trung_lap.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Bài 05 (BIEN01 - Ca phiếu 2): [6]; xoa(6) -> dau=cuoi=None",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_05_BIEN01_mot_nut_xoa_ve_rong.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Bài 06 (BIEN02 - Ca phiếu 3): [1,2,3]; xoa(1) -> xóa nút đầu",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_06_BIEN02_xoa_nut_dau.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Bài 07 (BIEN03 - Ca phiếu 4): [1,2,3]; xoa(3) -> xóa nút cuối",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_07_BIEN03_xoa_nut_cuoi.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Bài 08 (LOI01): Kiểm tra Validator chặn 8 loại input sai",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_08_LOI01_kiem_tra_input_sai.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Bài 09 (KT09 - Ca phiếu 1): Danh sách rỗng ban đầu",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_09_KT09_danh_sach_rong.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Bài 10 (KT10 - Ca phiếu 5): [2,2,4]; xoa(2) chỉ xóa số 2 đầu tiên",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_10_KT10_trung_chi_xoa_dau_tien.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Bài 11 (KT11 & KT12): Giới hạn 1000 nút & Khảo sát chi phí n=5,20,100",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_11_KT11_gioi_han_1000_nut_va_bo_dem.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Bài 12 (KT13 & KT14): Phát hiện đứt liên kết & Đối chiếu 300 dãy ngẫu nhiên",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/cac_bai_code_rieng/bai_12_KT13_phat_hien_dut_lien_ket_va_oracle.py",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Chạy toàn bộ 14 Unit Tests (tests/test_danh_sach_kep.py)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/DT063_Python/tests/test_danh_sach_kep.py",
+      "console": "integratedTerminal"
+    }
+  ]
+}

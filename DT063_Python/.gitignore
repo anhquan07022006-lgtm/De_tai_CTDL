@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.DS_Store
+Thumbs.db
+*.tmp
+~$*
+*ThongTinNop.txt
+KET_QUA_CHAY_TRUC_TIEP.txt
+
