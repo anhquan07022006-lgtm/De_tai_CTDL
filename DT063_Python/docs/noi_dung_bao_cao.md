@@ -259,6 +259,49 @@ Gọi $n$ là số nút hiện có trong danh sách:
   - Bộ nhớ lưu trữ cấu trúc: $\Theta(n)$, trong đó mỗi nút giữ 1 giá trị và **2 liên kết** (`truoc`, `ke`), tốn gấp đôi số con trỏ liên kết so với danh sách liên kết đơn.
   - Bộ nhớ phụ của các phép thêm, tìm, tách, kiểm tra liên kết: $O(1)$. Hai mảng kết quả trả về của hàm `duyet_hai_chieu` dùng $\Theta(n)$ bộ nhớ để xuất kết quả.
 
+**Giả mã nền tảng theo giáo trình INT1306 (Chương 5, mục 5.2.6, trang in 122–124 / trang PDF 134–136):**
+
+```text
+THEM_DAU(L, x):
+    m ← TaoNutKep(x)                  // m.gia_tri = x, m.truoc = None, m.ke = None
+    nếu L.dau == None thì:            // Danh sách đang rỗng
+        L.dau ← m; L.cuoi ← m
+    ngược lại:                        // Danh sách khác rỗng
+        m.ke ← L.dau
+        L.dau.truoc ← m
+        L.dau ← m
+    L.n ← L.n + 1
+
+THEM_CUOI(L, x):
+    m ← TaoNutKep(x)
+    nếu L.cuoi == None thì:           // Danh sách đang rỗng
+        L.dau ← m; L.cuoi ← m
+    ngược lại:
+        m.truoc ← L.cuoi
+        L.cuoi.ke ← m
+        L.cuoi ← m
+    L.n ← L.n + 1
+
+TIM_NUT(L, x):
+    p ← L.dau
+    trong khi p != None thực hiện:
+        nếu p.gia_tri == x thì trả về p
+        p ← p.ke
+    trả về None
+
+XOA_NUT(L, p):                        // p là nút đã biết thuộc danh sách L
+    nếu p.truoc == None thì:          // p là nút đầu
+        L.dau ← p.ke
+    ngược lại:
+        p.truoc.ke ← p.ke
+    nếu p.ke == None thì:             // p là nút cuối
+        L.cuoi ← p.truoc
+    ngược lại:
+        p.ke.truoc ← p.truoc
+    p.truoc ← None; p.ke ← None
+    L.n ← L.n - 1
+```
+
 ---
 
 # CHƯƠNG 3. PHÂN TÍCH, THIẾT KẾ VÀ CÀI ĐẶT
@@ -534,7 +577,28 @@ KET LUAN: KHOP KY VONG (loi du kien da duoc bat, chuong trinh khong dung bat thu
 
 ## 4.7. Kết quả chạy toàn bộ bộ kiểm thử (`python tests/test_danh_sach_kep.py`)
 
-Khi thực thi lệnh `python tests/test_danh_sach_kep.py`, toàn bộ **14 ca kiểm độc lập** gồm **1270 phép kiểm (`assert`)** hoàn tất trong khoảng `0.04s` với kết quả **ĐẠT 100% (PASS 14/14 ca, 0 Fail)**.
+Khi thực thi lệnh `python tests/test_danh_sach_kep.py`, toàn bộ **14 ca kiểm độc lập** gồm **1270 phép kiểm (`assert`)** hoàn tất trong khoảng `0.03s` với kết quả **ĐẠT 100% (PASS 14/14 ca, 0 Fail)**.
+
+**Bảng 4.3. Tổng kết kết quả thực thi bộ kiểm thử tự động (`tests/test_danh_sach_kep.py`)**
+
+```text
+test_BIEN01_mot_nut (__main__.TestDT063.test_BIEN01_mot_nut) ... ok
+test_BIEN02_xoa_dau (__main__.TestDT063.test_BIEN02_xoa_dau) ... ok
+test_BIEN03_xoa_cuoi (__main__.TestDT063.test_BIEN03_xoa_cuoi) ... ok
+test_KT09_danh_sach_rong (__main__.TestDT063.test_KT09_danh_sach_rong) ... ok
+test_KT10_trung_chi_xoa_dau_tien (__main__.TestDT063.test_KT10_trung_chi_xoa_dau_tien) ... ok
+test_KT11_gioi_han_va_phan_tich (__main__.TestDT063.test_KT11_gioi_han_va_phan_tich) ... ok
+test_KT12_bo_dem (__main__.TestDT063.test_KT12_bo_dem) ... ok
+test_KT13_phat_hien_lien_ket_hong (__main__.TestDT063.test_KT13_phat_hien_lien_ket_hong) ... ok
+test_KT14_ngau_nhien_oracle (__main__.TestDT063.test_KT14_ngau_nhien_oracle) ... ok
+test_LOI01_validator (__main__.TestDT063.test_LOI01_validator) ... ok
+test_TK01_them_xen_ke (__main__.TestDT063.test_TK01_them_xen_ke) ... ok
+test_TK02_bien_trung_lap (__main__.TestDT063.test_TK02_bien_trung_lap) ... ok
+test_VD01_vi_du_1 (__main__.TestDT063.test_VD01_vi_du_1) ... ok
+test_VD02_vi_du_2 (__main__.TestDT063.test_VD02_vi_du_2) ... ok
+----------------------------------------------------------------------
+Ran 14 tests in 0.029s -> OK (14 ca độc lập, 1270 phép kiểm PASS 100%)
+```
 
 ## 4.8. Khảo sát chi phí trên ba quy mô hợp lệ ($n = 5, 20, 100$)
 
@@ -557,6 +621,20 @@ Thực hiện lệnh `python demo.py --khao-sat` trên ba quy mô theo phiếu g
 **Nhận xét từ số liệu khảo sát:**
 1. **Sự khác biệt bản chất giữa Tìm kiếm và Tách nút:** Khi quy mô $n$ tăng từ $5 \rightarrow 20 \rightarrow 100$, số nút phải xét khi tìm phần tử ở giữa ($3 \rightarrow 10 \rightarrow 50$) và ở cuối ($5 \rightarrow 20 \rightarrow 100$) tăng tuyến tính đúng theo cấp độ phức tạp $O(n)$. Ngược lại, một khi đã tìm được nút cần xóa, số liên kết cấu trúc phải sửa để tách nút đó ra khỏi danh sách **luôn bất biến bằng 2** ở mọi quy mô ($n=5, 20, 100$) và mọi vị trí (đầu, giữa, cuối), khẳng định chi phí tách nút là $O(1)$.
 2. **Chi phí tạo danh sách:** Nút đầu tiên thêm vào danh sách rỗng sửa 2 liên kết (`dau`, `cuoi`); mỗi nút trong $n-1$ nút tiếp theo thêm vào đầu hoặc cuối sửa đúng 3 liên kết, nên tổng số liên kết sửa khi tạo $n$ nút luôn tuân theo công thức chính xác $2 + 3(n-1)$.
+
+## 4.9. GitHub và chạy lại từ bản clone sạch
+
+**Bảng 4.5. Kho mã nguồn GitHub và thông tin phiên bản**
+
+| Thông tin | Giá trị thực tế |
+|---|---|
+| **URL Repository GitHub** | `https://github.com/anhquan07022006-lgtm/De_tai_CTDL` |
+| **Full SHA chạy ảnh (`Commit C`)** | `6f975545a0e0edeb881c5508ad88e592e79e96ed` |
+| **SHA phiên bản nộp (`Commit S`)** | Xem tệp `N24DCDT075_DT063_BuiAnhQuan_ThongTinNop.txt` nộp kèm |
+| **Permalink tệp thuật toán chính** | `https://github.com/anhquan07022006-lgtm/De_tai_CTDL/blob/6f975545a0e0edeb881c5508ad88e592e79e96ed/DT063_Python/src/danh_sach_kep.py` |
+| **Permalink tệp kiểm thử** | `https://github.com/anhquan07022006-lgtm/De_tai_CTDL/blob/6f975545a0e0edeb881c5508ad88e592e79e96ed/DT063_Python/tests/test_danh_sach_kep.py` |
+| **Mã / kiểm thử giữa C và S** | Giống nhau 100% (không thay đổi logic thuật toán hay dữ liệu kiểm thử) |
+| **Lệnh chạy lại sau khi clone** | `powershell -ExecutionPolicy Bypass -File .\DT063_Python\Run_all.ps1` |
 
 ---
 
@@ -614,11 +692,17 @@ DT063_Python/
 ├── tests/
 │   ├── __init__.py
 │   └── test_danh_sach_kep.py     # Bộ kiểm thử tự động 14 ca độc lập (1270 phép kiểm)
+├── cac_bai_code_rieng/           # 12 tệp code .py độc lập tương ứng từng ca thử mẫu (Bài 01..12)
+│   ├── bai_01_VD01_xoa_nut_giua.py
+│   ├── ...
+│   └── bai_12_KT13_phat_hien_dut_lien_ket_va_oracle.py
 ├── web/
 │   ├── __init__.py
 │   ├── app.py                    # Máy chủ HTTP chuẩn Python (/api/giai, /api/khao-sat, /api/test)
-│   └── index.html                # Giao diện Web mô phỏng trực quan từng bước + Cẩm nang bảo vệ
+│   ├── index.html                # Giao diện Web mô phỏng trực quan từng bước (chạy được cả offline)
+│   └── Chay_Web_Server.bat       # File bấm đúp khởi động nhanh máy chủ Web
 └── docs/
+    ├── anh_ket_qua/              # Thư mục lưu 11 ảnh minh chứng A01–A11
     └── noi_dung_bao_cao.md       # Nội dung báo cáo toàn văn đề tài DT063
 ```
 
